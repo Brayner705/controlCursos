@@ -1,105 +1,60 @@
-const asistencia1 = document.querySelector(".asistencia1");
+import { guardarDatos, obtenerDatos, crearTarjeta } from "./scripts/saveDates.js";
+
 const agregar = document.getElementById("agregar");
 const modal = document.querySelector(".modal");
 const modalPago = document.querySelector(".modalPago");
-const reinciar = document.getElementById("reiniciar");
 const exitAgregar = document.getElementById("salirAgregar");
-const agregarTarjeta = document.getElementById("agregarTarjeta");
 const contRegistro = document.querySelector(".registros");
 
 const colorVerde = "#008f39";
 const colorAmarillo = "#FFDE21";
-const colorRojo = "#ff0000";
 
-const crearTarjeta = (nombre, curso, numTarjeta) => {
-  // Crear el contenedor principal de la tarjeta
-  const card = document.createElement("div");
-  card.classList.add("tarjetas");
-
-  // Crear la sección "datos"
-  const datos = document.createElement("div");
-  datos.classList.add("datos");
-  const img = document.createElement("img");
-  img.src = "imagen/perfil.png";
-  img.alt = "Foto Perfil";
-  const h3Name = document.createElement("h3");
-  h3Name.textContent = nombre;
-  datos.appendChild(img);
-  datos.appendChild(h3Name);
-
-  // Crear la sección "información"
-  const informacion = document.createElement("div");
-  informacion.classList.add("informacion");
-  const h3Course = document.createElement("h3");
-  h3Course.textContent = curso;
-
-  // Crear los botones
-  const botones = document.createElement("div");
-  botones.classList.add("botones");
-  const btnPago = document.createElement("button");
-  btnPago.classList.add(`pagoRealizado`);
-  btnPago.classList.add(`pago${numTarjeta}`);
-  btnPago.textContent = "PR";
-  const btnInfo = document.createElement("button");
-  btnInfo.classList.add("masInformacion");
-  btnInfo.textContent = "Más información";
-  const btnReiniciar = document.createElement("button");
-  btnReiniciar.id = "reiniciar";
-  btnReiniciar.classList.add("reinicio");
-  btnReiniciar.innerHTML = '<i class="fa fa-rotate-right"></i>';
-  botones.appendChild(btnPago);
-  botones.appendChild(btnInfo);
-  botones.appendChild(btnReiniciar);
-
-  // Crear las asistencias
-  const asistencias = document.createElement("div");
-  asistencias.classList.add("asistencias");
-  for (let i = 0; i < 4; i++) {
-    const asistencia = document.createElement("div");
-    asistencia.classList.add("asistencia");
-    asistencias.appendChild(asistencia);
+window.addEventListener('load', ()=>{
+  obtenerDatos();
+  const cargarDatos = JSON.parse(sessionStorage .getItem('datosDB'))
+  try{
+    cargarDatos.forEach(card => {
+      contRegistro.appendChild(crearTarjeta(card.nombre,card.curso));
+    });
+  } catch(e){
+    console.error('No existen registros guardados');
   }
-
-  // Agregar los elementos a la sección "información"
-  informacion.appendChild(h3Course);
-  informacion.appendChild(botones);
-  informacion.appendChild(asistencias);
-
-  // Agregar las secciones "datos" e "información" a la tarjeta
-  card.appendChild(datos);
-  card.appendChild(informacion);
-
-  // Agregar la tarjeta al contenedor principal
-  contRegistro.appendChild(card);
-};
-
-let existeTarjeta = false;
+})
 
 agregar.addEventListener("click", () => {
   modal.style.display = "grid";
 });
 
 exitAgregar.addEventListener("click", () => {
+  document.getElementById("nombre").value = "";
+  document.getElementById("curso").value = "";
   modal.style.display = "none";
 });
 
-let numTarjeta = 1;
 document.addEventListener("DOMContentLoaded", () => {
+
   document.getElementById("agregarTarjeta").addEventListener("click", (e) => {
     e.preventDefault();
-    const nombre = document.getElementById("nombre").value;
-    const curso = document.getElementById("curso").value;
 
-    modal.style.display = "none";
-    crearTarjeta(nombre, curso, numTarjeta);
+    if (document.getElementById("nombre").value.trim() != "" && document.getElementById('curso').value.trim() != "") {
+      const nombre = document.getElementById("nombre").value;
+      const curso = document.getElementById("curso").value;
 
-    document.getElementById("nombre").value = "";
-    document.getElementById("curso").value = "";
-    numTarjeta++;
+      modal.style.display = "none";
+
+      contRegistro.appendChild(crearTarjeta(nombre, curso));
+
+      guardarDatos(nombre,curso);
+
+      document.getElementById("nombre").value = "";
+      document.getElementById("curso").value = "";
+
+    }else alert('Ambos campos son requeridos');
+
   });
 
   contRegistro.addEventListener("click", (e) => {
-    const pr = document.querySelectorAll(".pagoRealizado");
+
     const pc = document.getElementById("PC");
     const mp = document.getElementById("MP");
     if (e.target.classList.contains("pagoRealizado")) {
@@ -133,21 +88,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reinciar tarjeta
     if (e.target.tagName === "I") {
+      const tarjeta = e.target.closest(".informacion");
 
-      const tarjeta = e.target.closest('.informacion');
-
-      const botonPr = tarjeta.querySelector('.pagoRealizado');
-      const asistenciasPresionada = tarjeta.querySelectorAll('.asistencia')
+      const botonPr = tarjeta.querySelector(".pagoRealizado");
+      const asistenciasPresionada = tarjeta.querySelectorAll(".asistencia");
 
       asistenciasPresionada.forEach((asistencia) => {
         asistencia.style.backgroundColor = "transparent";
       });
 
-      console.log(asistenciasPresionada )
+      console.log(asistenciasPresionada);
 
       botonPr.style.backgroundColor = "#ccc";
       botonPr.style.color = "#000";
-
     }
   });
 });
